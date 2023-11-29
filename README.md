@@ -17,7 +17,7 @@
 1. Убедиться, что демон Docker работает.
 2. Клонировать репозиторий 
 ```bash 
-git clone https://github.com/Alryum/
+git clone https://github.com/Alryum/billing_test_task.git
 ```
 3. В корневой папке (там, где находится manage.py) открыть командную строку и выполнить команду 
 ```bash 
