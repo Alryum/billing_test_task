@@ -15,10 +15,22 @@
   
 ## Запуск  
 1. Убедиться, что демон Docker работает.
-2. Клонировать репозиторий ```bash git clone https://github.com/Alryum/```
-3. В корневой папке (там, где находится manage.py) открыть командную строку и выполнить команду ```bash docker-compose up -d --build```.
+2. Клонировать репозиторий 
+```bash 
+git clone https://github.com/Alryum/
+3. В корневой папке (там, где находится manage.py) открыть командную строку и выполнить команду 
+```bash 
+docker-compose up -d --build.
 4. После того, как контейнер соберется и запустится, необходимо провести миграции:   
-```bash docker-compose exec web python manage.py migrate```.
-5. Теперь необходимо перезапустить контейнер: ```bash docker-compose down```, а затем снова выполнить ``` bash docker-compose up -d```.
+```bash 
+docker-compose exec web python manage.py migrate.
+5. Теперь необходимо перезапустить контейнер: 
+```bash 
+docker-compose down 
+а затем снова выполнить 
+```bash 
+docker-compose up -d
 
-После этих действий приложение будет доступно по адресу: ```bash http://127.0.0.1:8000```
+После этих действий приложение будет доступно по адресу: 
+```bash
+http://127.0.0.1:8000
