@@ -16,12 +16,15 @@ class Accrual(APIView):
 
             user, _ = PaymentUser.objects.get_or_create(uuid=user_id, balance=0)
 
+            if amount < 0:
+                return Response({'message': 'На вход ожидается положительное число'}, status=status.HTTP_400_BAD_REQUEST)
+
             user.balance += amount
             user.save()
 
             return Response({'message': 'Средства успешно зачислены'}, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Ошибка валидации данных'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Debiting(APIView):
@@ -44,7 +47,7 @@ class Debiting(APIView):
             else:
                 return Response({'message': 'Недостаточно средств для списания'}, status=status.HTTP_402_PAYMENT_REQUIRED)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Ошибка валидации данных'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Transfer(APIView):
@@ -75,7 +78,7 @@ class Transfer(APIView):
             return Response({'message': 'Перевод успешно осуществлен.'}, status=status.HTTP_200_OK)
 
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Ошибка валидации данных'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class Balance(APIView):

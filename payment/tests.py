@@ -21,6 +21,24 @@ class PaymentUserTests(TestCase):
         user = PaymentUser.objects.get(uuid=user_id)
         self.assertEqual(user.balance, amount)
 
+    def test_accrual_view_with_invalid_uuid(self):
+        user_id = 'string'
+        amount = 123
+
+        url = reverse('accrual')
+        response = self.client.post(url, {'uuid': user_id, 'amount': amount})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], 'Ошибка валидации данных')
+
+    def test_accrual_view_with_invalid_amount(self):
+        user_id = '12345678-1234-5678-1234-567812345678'
+        amount = -123
+
+        url = reverse('accrual')
+        response = self.client.post(url, {'uuid': user_id, 'amount': amount})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], 'На вход ожидается положительное число')
+
     def test_debiting_view_with_sufficient_balance(self):
         user_id = '77777777-1233-5678-1234-567812345678'
         initial_balance = 100
