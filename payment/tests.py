@@ -9,6 +9,7 @@ class PaymentUserTests(TestCase):
     def setUp(self):
         self.client = APIClient()
 
+    # Accrual view tests
     def test_accrual_view(self):
         user_id = '12345678-1234-5678-1234-567812345678'
         amount = 100
@@ -37,8 +38,9 @@ class PaymentUserTests(TestCase):
         url = reverse('accrual')
         response = self.client.post(url, {'uuid': user_id, 'amount': amount})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['message'], 'На вход ожидается положительное число')
+        self.assertEqual(response.data['message'], 'На вход ожидается число больше нуля')
 
+    # Debiting view tests
     def test_debiting_view_with_sufficient_balance(self):
         user_id = '77777777-1233-5678-1234-567812345678'
         initial_balance = 100
@@ -69,6 +71,22 @@ class PaymentUserTests(TestCase):
         user.refresh_from_db()
         self.assertEqual(user.balance, initial_balance)
 
+    def test_debiting_view_with_invalid_amount(self):
+        user_id = '77777777-1233-5678-1234-567812345678'
+        initial_balance = 30
+        amount = 0
+
+        user = PaymentUser.objects.create(uuid=user_id, balance=initial_balance)
+
+        url = reverse('debiting')
+        response = self.client.post(url, {'uuid': user_id, 'amount': amount})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], 'На вход ожидается число больше нуля')
+
+        user.refresh_from_db()
+        self.assertEqual(user.balance, initial_balance)
+
+    # Transfer view tests
     def test_transfer_view_with_sufficient_balance(self):
         from_user_id = '12345678-1234-5678-1234-567812345678'
         to_user_id = '77777777-1233-5678-1234-567812345678'
@@ -113,6 +131,29 @@ class PaymentUserTests(TestCase):
         self.assertEqual(from_user.balance, initial_balance_from_user)
         self.assertEqual(to_user.balance, initial_balance_to_user)
 
+    def test_transfer_view_with_invalid_amount(self):
+        from_user_id = '12345678-1234-5678-1234-567812345678'
+        to_user_id = '77777777-1233-5678-1234-567812345678'
+        initial_balance_from_user = 100
+        initial_balance_to_user = 50
+        amount = -30
+
+        from_user = PaymentUser.objects.create(uuid=from_user_id, balance=initial_balance_from_user)
+        to_user = PaymentUser.objects.create(uuid=to_user_id, balance=initial_balance_to_user)
+
+        url = reverse('transfer')
+        response = self.client.post(
+            url, {'from_user_id': from_user_id, 'to_user_id': to_user_id, 'amount': amount})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['message'], 'На вход ожидается число больше нуля')
+
+        from_user.refresh_from_db()
+        to_user.refresh_from_db()
+
+        self.assertEqual(from_user.balance, initial_balance_from_user)
+        self.assertEqual(to_user.balance, initial_balance_to_user)
+
+    # Balance view tests
     def test_balance_view_existing_user(self):
         user_id = '12345678-1234-5678-1234-567812345678'
         balance = 75

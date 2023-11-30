@@ -4,10 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import PaymentUser
 from .serializers import AccrualSerializer, DebitingSerializer, TransferSerializer
+from .decorators import positive_amount_required
 
 
 class Accrual(APIView):
     # Принимает id пользователя и сколько средств зачислить.
+    @positive_amount_required
     def post(self, request):
         serializer = AccrualSerializer(data=request.data)
         if serializer.is_valid():
@@ -15,9 +17,6 @@ class Accrual(APIView):
             amount = serializer.validated_data['amount']
 
             user, _ = PaymentUser.objects.get_or_create(uuid=user_id, balance=0)
-
-            if amount < 0:
-                return Response({'message': 'На вход ожидается положительное число'}, status=status.HTTP_400_BAD_REQUEST)
 
             user.balance += amount
             user.save()
@@ -28,6 +27,8 @@ class Accrual(APIView):
 
 
 class Debiting(APIView):
+    # Принимает id пользователя с которого нужно списать средства и сумму списания.
+    @positive_amount_required
     def post(self, request):
         serializer = DebitingSerializer(data=request.data)
         if serializer.is_valid():
@@ -53,6 +54,7 @@ class Debiting(APIView):
 class Transfer(APIView):
     # Принимает id пользователя с которого нужно списать средства,
     # id пользователя которому должны зачислить средства, а также сумму.
+    @positive_amount_required
     def post(self, request):
         serializer = TransferSerializer(data=request.data)
         if serializer.is_valid():
